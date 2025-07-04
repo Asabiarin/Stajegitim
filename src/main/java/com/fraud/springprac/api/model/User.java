@@ -1,4 +1,4 @@
-package com.fraud.springprac.model;
+package com.fraud.springprac.api.model;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.persistence.*;
@@ -10,19 +10,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "user")
+@Table(name = "user_table",schema = "egitim")
 public class User{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonAlias({"tckn", "tc", "tcno"})
     private int id;
-    @Column(nullable = false)
     private String firstName;
-    @Column(nullable = false)
     private String lastName;
-    @Column(nullable = false)
     private int age;
-    @Column
     private String email;
 
 

@@ -1,4 +1,4 @@
-package com.fraud.springprac.model;
+package com.fraud.springprac.api.model;
 
 import java.util.ArrayList;
 import java.util.List;
