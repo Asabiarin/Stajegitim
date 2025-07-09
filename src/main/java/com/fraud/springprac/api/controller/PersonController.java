@@ -8,9 +8,11 @@ import com.fraud.springprac.api.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-// REST Controller for managing employees
+
 @RestController
 @RequestMapping("/api/")
 public class PersonController {
@@ -25,13 +27,18 @@ public class PersonController {
 
 
     @PostMapping("person/byId")
-    public ResponseEntity<PersonDto> getPersonByIdWithBody(@RequestBody PersonDto requestDto) throws PersonNotFoundException {
+    public ResponseEntity<PersonDto> getPersonByIdWithBody(
+            @AuthenticationPrincipal UserDetails currentUser,
+            @RequestBody PersonDto requestDto) throws PersonNotFoundException {
+        String username = currentUser.getUsername();
+        System.out.println("Request made by " + username);
        PersonDto personDto = personService.getPersonById(requestDto.getId());
            return new ResponseEntity<>(personDto, HttpStatus.OK);
     }
 
     @GetMapping("person")
     public ResponseEntity<PersonResponse> getPersons(
+
             @RequestParam(value = "pageNo", defaultValue = "0", required = false)int pageNO,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false)int pageSize
     ) {

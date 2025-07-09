@@ -7,7 +7,6 @@ import com.fraud.springprac.api.model.Role;
 import com.fraud.springprac.api.model.UserEntity;
 import com.fraud.springprac.api.repository.RoleRepository;
 import com.fraud.springprac.api.repository.UserRepository;
-import com.fraud.springprac.api.security.JWTAuthenticationFilter;
 import com.fraud.springprac.api.security.JWTGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collection;
 import java.util.Collections;
 
 @RestController
