@@ -1,9 +1,12 @@
 package com.fraud.springprac.api.controller;
 
 
+import com.fraud.springprac.api.dto.AuthResponseDto;
+import com.fraud.springprac.api.dto.LoginDto;
 import com.fraud.springprac.api.dto.PersonDto;
 import com.fraud.springprac.api.dto.PersonResponse;
 import com.fraud.springprac.api.exception.PersonNotFoundException;
+import com.fraud.springprac.api.security.JWTGenerator;
 import com.fraud.springprac.api.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,10 +31,7 @@ public class PersonController {
 
     @PostMapping("person/byId")
     public ResponseEntity<PersonDto> getPersonByIdWithBody(
-            @AuthenticationPrincipal UserDetails currentUser,
             @RequestBody PersonDto requestDto) throws PersonNotFoundException {
-        String username = currentUser.getUsername();
-        System.out.println("Request made by " + username);
        PersonDto personDto = personService.getPersonById(requestDto.getId());
            return new ResponseEntity<>(personDto, HttpStatus.OK);
     }

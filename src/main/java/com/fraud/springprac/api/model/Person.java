@@ -1,6 +1,5 @@
 package com.fraud.springprac.api.model;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

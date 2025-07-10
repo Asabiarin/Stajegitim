@@ -42,7 +42,7 @@ public class PersonServiceImpl implements PersonService {
         Page<Person> person = personRepository.findAll(pageable);
         List<Person> listOfPersons = person.getContent();
         // map because it returns a list
-        List<PersonDto> content =listOfPersons.stream().map(u -> mapToDto(u)).collect(Collectors.toList());
+        List<PersonDto> content =listOfPersons.stream().map(u -> mapToPersonDto(u)).collect(Collectors.toList());
 
         PersonResponse personResponse = new PersonResponse();
         personResponse.setContent(content);
@@ -58,7 +58,7 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public PersonDto getPersonById(int id) {
         Person person = personRepository.findById(id).orElseThrow(() -> new PersonNotFoundException("Person with id " + id + " not found"));
-        return mapToDto(person);
+        return mapToPersonDto(person);
 
     }
 
@@ -80,7 +80,7 @@ public class PersonServiceImpl implements PersonService {
         personRepository.delete(person);
     }
 
-    private PersonDto mapToDto(Person person) {
+    private PersonDto mapToPersonDto(Person person) {
         return getPersonDto(person);
     }
 
