@@ -24,12 +24,12 @@ public class JWTGenerator {
         String username = authentication.getName();
         Date currentDate = new Date();
 
-        Date internalExpireDate = new Date(currentDate.getTime() + SecurityConstants.JWT_INTERNAL_TOKEN_EXPIRATION);
+        Date absoluteExpireDate = new Date(currentDate.getTime() + SecurityConstants.JWT_ABSOLUTE_EXPIRATION);
 
         String token = Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(currentDate)
-                .setExpiration(internalExpireDate)
+                .setExpiration(absoluteExpireDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
         return token;

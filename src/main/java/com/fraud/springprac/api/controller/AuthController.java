@@ -3,7 +3,6 @@ package com.fraud.springprac.api.controller;
 import com.fraud.springprac.api.dto.AuthResponseDto;
 import com.fraud.springprac.api.dto.LoginDto;
 import com.fraud.springprac.api.dto.RegisterDto;
-import com.fraud.springprac.api.dto.UserDto;
 import com.fraud.springprac.api.model.ActiveToken;
 import com.fraud.springprac.api.model.Role;
 import com.fraud.springprac.api.model.UserEntity;
@@ -34,12 +33,12 @@ import java.util.Date;
 @RequestMapping("/api/auth/")
 public class AuthController {
 
-    private AuthenticationManager authenticationManager;
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-    private PasswordEncoder passwordEncoder;
-    private JWTGenerator jwtGenerator;
-    private ActiveTokenRepository  activeTokenRepository;
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JWTGenerator jwtGenerator;
+    private final ActiveTokenRepository  activeTokenRepository;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,

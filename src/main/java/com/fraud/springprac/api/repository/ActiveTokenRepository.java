@@ -13,11 +13,7 @@ import java.util.stream.Stream;
 @Repository
 public interface ActiveTokenRepository extends JpaRepository<ActiveToken, Integer> {
     Optional<ActiveToken> findByToken(String token);
-    Stream<ActiveToken> getActiveTokenByUser(UserEntity user);
+//    Stream<ActiveToken> getActiveTokenByUser(UserEntity user);
     @Transactional
     void deleteByUser(UserEntity user);
-    @Transactional
-    void deleteByAbsoluteExpirationAfter(Date absoluteExpirationAfter);
-    @Transactional
-    void deleteBySlidingExpirationAfter(Date slidingExpirationAfter);
 }
