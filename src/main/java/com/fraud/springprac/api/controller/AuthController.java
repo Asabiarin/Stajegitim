@@ -78,7 +78,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         UserEntity user = userRepository.findByUsername(loginDto.getUsername())
-                    .orElseThrow(() -> new RuntimeException("User not found after authentication?"));
+                .orElseThrow(() -> new RuntimeException("User not found after authentication?"));
 
         activeTokenRepository.deleteByUser(user);
 
@@ -88,10 +88,10 @@ public class AuthController {
         Date slidingExp = new Date(now.getTime() + SecurityConstants.JWT_SLIDING_WINDOW_EXPIRATION);
         Date absoluteExp = new Date(now.getTime() + SecurityConstants.JWT_ABSOLUTE_EXPIRATION);
 
-            ActiveToken activeToken = new ActiveToken(accessToken, user, slidingExp, absoluteExp, now);
-            activeTokenRepository.save(activeToken);
+        ActiveToken activeToken = new ActiveToken(accessToken, user, slidingExp, absoluteExp, now);
+        activeTokenRepository.save(activeToken);
 
-            return new ResponseEntity<>(new AuthResponseDto(accessToken), HttpStatus.OK);
+        return new ResponseEntity<>(new AuthResponseDto(accessToken), HttpStatus.OK);
 
     }
 
