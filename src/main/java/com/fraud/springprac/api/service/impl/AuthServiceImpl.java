@@ -12,6 +12,9 @@ import com.fraud.springprac.api.repository.UserRepository;
 import com.fraud.springprac.api.security.JWTGenerator;
 import com.fraud.springprac.api.security.SecurityConstants;
 import com.fraud.springprac.api.service.AuthService;
+import com.fraud.springprac.api.service.RedisService;
+import jakarta.persistence.Cacheable;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JWTGenerator jwtGenerator;
     private final ActiveTokenRepository activeTokenRepository;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisService redisService;
 
     public AuthServiceImpl(
             AuthenticationManager authenticationManager,
@@ -43,14 +46,14 @@ public class AuthServiceImpl implements AuthService {
             PasswordEncoder passwordEncoder,
             JWTGenerator jwtGenerator,
             ActiveTokenRepository activeTokenRepository,
-            RedisTemplate<String, String> redisTemplate) {
+            RedisService redisService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtGenerator = jwtGenerator;
         this.activeTokenRepository = activeTokenRepository;
-        this.redisTemplate = redisTemplate;
+        this.redisService = redisService;
     }
 
     @Override
@@ -73,6 +76,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
+    @CachePut(value = "TOKEN_CACHE", key = "#result.accessToken")
     public AuthResponseDto login(LoginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -86,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
 
         // Clean up old tokens
         activeTokenRepository.deleteByUser(user);
-        redisTemplate.delete("user:" + user.getUsername());
+        redisService.deleteToken(user.getUsername());
 
         // Generate new token
         String accessToken = jwtGenerator.generateToken(authentication);
@@ -101,26 +105,27 @@ public class AuthServiceImpl implements AuthService {
                 now);
         activeTokenRepository.save(activeToken);
 
-        // Store in Redis with TTL
-        redisTemplate.opsForValue().set(
-                "user:" + user.getUsername(),
-                accessToken,
-                SecurityConstants.JWT_ABSOLUTE_EXPIRATION,
-                TimeUnit.MILLISECONDS);
+        // Store in Redis with sliding expiration TTL
+        redisService.saveToken(
+                activeToken,
+                SecurityConstants.JWT_SLIDING_WINDOW_EXPIRATION,  // 30 minutes
+                SecurityConstants.JWT_ABSOLUTE_EXPIRATION         // 1 day
+        );
 
         return new AuthResponseDto(accessToken);
     }
 
-    @Override
-    public void logout(String token) {
-        if (token != null && token.startsWith("Bearer ")) {
-            String jwt = token.substring(7);
-            ActiveToken activeToken = activeTokenRepository.findByToken(jwt)
-                    .orElse(null);
-            if (activeToken != null) {
-                activeTokenRepository.delete(activeToken);
-                redisTemplate.delete("user:" + activeToken.getUser().getUsername());
-            }
-        }
-    }
+
+//    @Override
+//    public void logout(String token) {
+//        if (token != null && token.startsWith("Bearer ")) {
+//            String jwt = token.substring(7);
+//            ActiveToken activeToken = activeTokenRepository.findByToken(jwt)
+//                    .orElse(null);
+//            if (activeToken != null) {
+//                activeTokenRepository.delete(activeToken);
+//                redisTemplate.delete("user:" + activeToken.getUser().getUsername());
+//            }
+//        }
+//    }
 }

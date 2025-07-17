@@ -7,5 +7,5 @@ import com.fraud.springprac.api.dto.RegisterDto;
 public interface AuthService {
     String register(RegisterDto registerDto);
     AuthResponseDto login(LoginDto loginDto);
-    void logout(String token);
+    // void logout(String token);
 }

@@ -11,6 +11,7 @@ import com.fraud.springprac.api.repository.RoleRepository;
 import com.fraud.springprac.api.repository.UserRepository;
 import com.fraud.springprac.api.security.JWTGenerator;
 import com.fraud.springprac.api.security.SecurityConstants;
+import com.fraud.springprac.api.service.impl.AuthServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,65 +34,25 @@ import java.util.Date;
 @RequestMapping("/api/auth/")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JWTGenerator jwtGenerator;
-    private final ActiveTokenRepository  activeTokenRepository;
+
+
+    private final AuthServiceImpl authService;
 
     @Autowired
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
-                          RoleRepository roleRepository, PasswordEncoder passwordEncoder, JWTGenerator jwtGenerator ,ActiveTokenRepository activeTokenRepository) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtGenerator = jwtGenerator;
-        this.activeTokenRepository = activeTokenRepository;
+    public AuthController(AuthServiceImpl authService) {
+        this.authService = authService;
     }
 
     @PostMapping("register")
     public ResponseEntity<String> register(@RequestBody RegisterDto registerDto) {
-        if (userRepository.existsByUsername(registerDto.getUsername())) {
-            return new ResponseEntity<>("Username is taken!", HttpStatus.BAD_REQUEST);
-        }
 
-        UserEntity user = new UserEntity();
-        user.setUsername(registerDto.getUsername());
-        user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
-
-        Role roles = roleRepository.findByName("USER").orElseThrow(() -> new RuntimeException("Role not found"));
-        user.setRoles(Collections.singletonList(roles));
-
-        userRepository.save(user);
-
-        return new ResponseEntity<>("User registered success!", HttpStatus.OK);
+        return new ResponseEntity<>(authService.register(registerDto), HttpStatus.OK);
     }
 
     @PostMapping("login")
     @Transactional
     public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDto loginDto) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        UserEntity user = userRepository.findByUsername(loginDto.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found after authentication?"));
-
-        activeTokenRepository.deleteByUser(user);
-
-        String accessToken = jwtGenerator.generateToken(authentication);
-
-        Date now = new Date();
-        Date slidingExp = new Date(now.getTime() + SecurityConstants.JWT_SLIDING_WINDOW_EXPIRATION);
-        Date absoluteExp = new Date(now.getTime() + SecurityConstants.JWT_ABSOLUTE_EXPIRATION);
-
-        ActiveToken activeToken = new ActiveToken(accessToken, user, slidingExp, absoluteExp, now);
-        activeTokenRepository.save(activeToken);
-
-        return new ResponseEntity<>(new AuthResponseDto(accessToken), HttpStatus.OK);
+        return new ResponseEntity<>(authService.login(loginDto), HttpStatus.OK);
 
     }
 

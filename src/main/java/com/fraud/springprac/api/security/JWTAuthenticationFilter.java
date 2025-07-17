@@ -1,7 +1,8 @@
 package com.fraud.springprac.api.security;
 
 import com.fraud.springprac.api.model.ActiveToken;
-import com.fraud.springprac.api.repository.ActiveTokenRepository;
+import com.fraud.springprac.api.service.RedisService;
+import com.fraud.springprac.api.service.impl.RedisServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,9 +15,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 import java.util.Date;
-
+import java.util.Optional;
 
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
@@ -27,65 +29,53 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
-    private ActiveTokenRepository activeTokenRepository;
-
+    private RedisServiceImpl redisService;
 
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
+
         String token = getJWTFromRequest(request);
-
-        if (StringUtils.hasText(token)) {
-            if (!tokenGenerator.validateToken(token)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-            ActiveToken activeToken = activeTokenRepository.findByToken(token).orElse(null);
-
-            if (activeToken == null) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-            Date now = new Date();
-
-            if (now.after(activeToken.getAbsoluteExpiration())){
-                activeTokenRepository.delete(activeToken);
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            if (now.after(activeToken.getSlidingExpiration())){
-                activeTokenRepository.delete(activeToken);
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            Date newSlidingExpiration = new Date(now.getTime() + SecurityConstants.JWT_SLIDING_WINDOW_EXPIRATION);
-            activeToken.setSlidingExpiration(newSlidingExpiration);
-            activeTokenRepository.save(activeToken);
-
-            String username = activeToken.getUser().getUsername();
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities()
-            );
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        if (!StringUtils.hasText(token)) {
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        // Step 1: Validate JWT signature
+        if (!tokenGenerator.validateToken(token)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Step 2: Check Redis for valid token (checks both expirations)
+       // Optional<ActiveToken> activeTokenOpt = redisService.findValidToken(token);
+//        if (activeTokenOpt.isEmpty()) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
+
+        // Step 3: Extend sliding expiration if token is still valid
+        redisService.extendTokenIfNotExpired(token, SecurityConstants.JWT_SLIDING_WINDOW_EXPIRATION);
+
+        // Step 4: Set authentication
+        //ActiveToken activeToken = activeTokenOpt.get();
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(tokenGenerator.getUsernameFromJWT(token));
+
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         filterChain.doFilter(request, response);
     }
 
     private String getJWTFromRequest(HttpServletRequest request) {
-       String bearerToken = request.getHeader("Authorization");
-       if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7,  bearerToken.length());
-       }
-       return null;
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }
