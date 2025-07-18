@@ -53,7 +53,6 @@ public class AuthController {
     @Transactional
     public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDto loginDto) {
         return new ResponseEntity<>(authService.login(loginDto), HttpStatus.OK);
-
     }
 
 //    @PostMapping("logout")

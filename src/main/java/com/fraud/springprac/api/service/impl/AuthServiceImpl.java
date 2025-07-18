@@ -13,6 +13,7 @@ import com.fraud.springprac.api.security.JWTGenerator;
 import com.fraud.springprac.api.security.SecurityConstants;
 import com.fraud.springprac.api.service.AuthService;
 import com.fraud.springprac.api.service.RedisService;
+import com.fraud.springprac.api.util.DateMilliStamp;
 import jakarta.persistence.Cacheable;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -76,24 +77,25 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    @CachePut(value = "TOKEN_CACHE", key = "#result.accessToken")
+    //@CachePut(value = "TOKEN_CACHE", key = "#result.accessToken")
     public AuthResponseDto login(LoginDto loginDto) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginDto.getUsername(),
-                        loginDto.getPassword()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
+        //System.out.println("Entering the log in " + DateMilliStamp.timeStamp());
         UserEntity user = userRepository.findByUsername(loginDto.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found after authentication?"));
+
+
+//        Authentication authentication = authenticationManager.authenticate(
+//                new UsernamePasswordAuthenticationToken(
+//                        loginDto.getUsername(),
+//                        loginDto.getPassword()));
+//        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // Clean up old tokens
         activeTokenRepository.deleteByUser(user);
         redisService.deleteToken(user.getUsername());
 
         // Generate new token
-        String accessToken = jwtGenerator.generateToken(authentication);
+        String accessToken = jwtGenerator.generateToken(user.getUsername());
 
         // Store in database
         Date now = new Date();
@@ -112,6 +114,7 @@ public class AuthServiceImpl implements AuthService {
                 SecurityConstants.JWT_ABSOLUTE_EXPIRATION         // 1 day
         );
 
+        //System.out.println("Exiting the log in " + DateMilliStamp.timeStamp());
         return new AuthResponseDto(accessToken);
     }
 

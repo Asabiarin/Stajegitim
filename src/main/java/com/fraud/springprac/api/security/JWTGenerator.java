@@ -20,8 +20,8 @@ public class JWTGenerator {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(Authentication authentication) {
-        String username = authentication.getName();
+    public String generateToken(String username) {
+//        String username = authentication.getName();
         Date currentDate = new Date();
 
         Date absoluteExpireDate = new Date(currentDate.getTime() + SecurityConstants.JWT_ABSOLUTE_EXPIRATION);

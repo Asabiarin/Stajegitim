@@ -8,6 +8,7 @@ import com.fraud.springprac.api.dto.PersonResponse;
 import com.fraud.springprac.api.exception.PersonNotFoundException;
 import com.fraud.springprac.api.security.JWTGenerator;
 import com.fraud.springprac.api.service.PersonService;
+import com.fraud.springprac.api.util.DateMilliStamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
 
 @EnableCaching
 @RestController
@@ -43,6 +46,7 @@ public class PersonController {
             @RequestParam(value = "pageNo", defaultValue = "0", required = false)int pageNO,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false)int pageSize
     ) {
+//        System.out.println("Getting the getPersons final time " + DateMilliStamp.timeStamp());
     return new ResponseEntity<>(personService.getAllPersons(pageNO,pageSize), HttpStatus.OK);
     }
 

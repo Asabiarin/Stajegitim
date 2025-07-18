@@ -12,15 +12,15 @@ import java.util.Map;
 @Component
 public class ActiveTokenRedisMapper {
 
-//    @CachePut(value = "REDIS_CACHE", key = "#result")
+//    @CachePut(value = "ActiveToken:", key = "#result")
     public Map<String, String> mapToRedis(ActiveToken activeToken) {
         Map<String, String> redisData = new HashMap<>();
-        redisData.put("id", String.valueOf(activeToken.getId()));
+        //redisData.put("id", String.valueOf(activeToken.getId()));
         redisData.put("token", activeToken.getToken());
         redisData.put("userId", String.valueOf(activeToken.getUser().getId()));
         redisData.put("slidingExpiration", String.valueOf(activeToken.getSlidingExpiration().getTime()));
         redisData.put("absoluteExpiration", String.valueOf(activeToken.getAbsoluteExpiration().getTime()));
-        redisData.put("issuedAt", String.valueOf(activeToken.getIssuedAt().getTime()));
+        //redisData.put("issuedAt", String.valueOf(activeToken.getIssuedAt().getTime()));
 
         return redisData;
     }

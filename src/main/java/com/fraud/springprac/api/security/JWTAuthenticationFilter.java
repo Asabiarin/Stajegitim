@@ -3,6 +3,7 @@ package com.fraud.springprac.api.security;
 import com.fraud.springprac.api.model.ActiveToken;
 import com.fraud.springprac.api.service.RedisService;
 import com.fraud.springprac.api.service.impl.RedisServiceImpl;
+import com.fraud.springprac.api.util.DateMilliStamp;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,29 +37,33 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-
+//        System.out.println("Entering the JWT filter: " + DateMilliStamp.timeStamp());
         String token = getJWTFromRequest(request);
         if (!StringUtils.hasText(token)) {
             filterChain.doFilter(request, response);
             return;
         }
-
+//        System.out.println("Leaving the first if : " + DateMilliStamp.timeStamp());
         // Step 1: Validate JWT signature
         if (!tokenGenerator.validateToken(token)) {
             filterChain.doFilter(request, response);
             return;
         }
-
+//        System.out.println("Leaving the validateToken " + DateMilliStamp.timeStamp());
         // Step 2: Check Redis for valid token (checks both expirations)
        // Optional<ActiveToken> activeTokenOpt = redisService.findValidToken(token);
 //        if (activeTokenOpt.isEmpty()) {
 //            filterChain.doFilter(request, response);
 //            return;
 //        }
-
+        String username = tokenGenerator.getUsernameFromJWT(token);
         // Step 3: Extend sliding expiration if token is still valid
-        redisService.extendTokenIfNotExpired(token, SecurityConstants.JWT_SLIDING_WINDOW_EXPIRATION);
-
+        //System.out.println("Before the IfNotExpired: " + DateMilliStamp.timeStamp());
+        if (!redisService.extendTokenIfNotExpired(username, SecurityConstants.JWT_SLIDING_WINDOW_EXPIRATION)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+//        System.out.println("After the extendTokenIfNotExpired " + DateMilliStamp.timeStamp());
         // Step 4: Set authentication
         //ActiveToken activeToken = activeTokenOpt.get();
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(tokenGenerator.getUsernameFromJWT(token));
@@ -68,6 +73,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+
+//        System.out.println("Leaving the authentication " + DateMilliStamp.timeStamp());
         filterChain.doFilter(request, response);
     }
 
