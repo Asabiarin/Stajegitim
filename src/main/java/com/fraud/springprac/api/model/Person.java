@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnTransformer;
 
 @Data
 @AllArgsConstructor
@@ -19,6 +20,15 @@ public class Person{
     private int age;
     @Column(unique = true)
     private String email;
+    @Column(name= "attributes" ,columnDefinition = "json")
+    @ColumnTransformer(write = "?::json")
+    private String attributes;
+
+    /*
+        ? -> the data you are trying to insert which is of type String
+        :: -> representing type casting
+        jsonb -> the target data type we wish our data to be transformed to
+    */
 
 
     @Override
@@ -29,6 +39,7 @@ public class Person{
                 ", lastName='" + lastName + '\'' +
                 ", age=" + age +
                 ", email='" + email + '\'' +
+                ", attributes='" + attributes + '\'' +
                 '}';
     }
 }

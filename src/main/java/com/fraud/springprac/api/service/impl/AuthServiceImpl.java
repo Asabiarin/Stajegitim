@@ -13,26 +13,16 @@ import com.fraud.springprac.api.security.JWTGenerator;
 import com.fraud.springprac.api.security.SecurityConstants;
 import com.fraud.springprac.api.service.AuthService;
 import com.fraud.springprac.api.service.RedisService;
-import com.fraud.springprac.api.util.DateMilliStamp;
-import jakarta.persistence.Cacheable;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -41,14 +31,12 @@ public class AuthServiceImpl implements AuthService {
     private final RedisService redisService;
 
     public AuthServiceImpl(
-            AuthenticationManager authenticationManager,
             UserRepository userRepository,
             RoleRepository roleRepository,
             PasswordEncoder passwordEncoder,
             JWTGenerator jwtGenerator,
             ActiveTokenRepository activeTokenRepository,
             RedisService redisService) {
-        this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;

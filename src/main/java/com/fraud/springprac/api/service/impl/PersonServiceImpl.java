@@ -1,5 +1,7 @@
 package com.fraud.springprac.api.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fraud.springprac.api.dto.PersonDto;
 import com.fraud.springprac.api.dto.PersonResponse;
 import com.fraud.springprac.api.exception.PersonNotFoundException;
@@ -18,11 +20,16 @@ import java.util.stream.Collectors;
 @Service
 public class PersonServiceImpl implements PersonService {
     private final PersonRepository personRepository;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public PersonServiceImpl(PersonRepository personRepository) {
+    public PersonServiceImpl(PersonRepository personRepository, ObjectMapper objectMapper) {
         this.personRepository = personRepository;
+        this.objectMapper = objectMapper;
     }
+
+
+
     @Override
     public PersonDto createPerson(PersonDto personDto) {
         Person person = new Person();
@@ -30,6 +37,11 @@ public class PersonServiceImpl implements PersonService {
         person.setLastName(personDto.getLastName());
         person.setEmail(personDto.getEmail());
         person.setAge(personDto.getAge());
+        try {
+            person.setAttributes(objectMapper.writeValueAsString(personDto.getAttributes()));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         Person newPerson = personRepository.save(person);
 
@@ -65,11 +77,26 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public PersonDto updatePerson(PersonDto personDto, int id) {
         Person person = personRepository.findById(id).orElseThrow(() -> new PersonNotFoundException("Person with id " + id + " not found"));
-        personDto.setId(person.getId());
-        person.setFirstName(personDto.getFirstName());
-        person.setLastName(personDto.getLastName());
-        person.setEmail(personDto.getEmail());
-        person.setAge(personDto.getAge());
+        if (personDto.getFirstName() != null) {
+            person.setFirstName(personDto.getFirstName());
+        }
+        if (personDto.getLastName() != null) {
+            person.setLastName(personDto.getLastName());
+        }
+        if (personDto.getEmail() != null) {
+            person.setEmail(personDto.getEmail());
+        }
+        if (personDto.getAge() >= 0) {
+            person.setAge(personDto.getAge());
+        }
+        if (personDto.getAttributes() != null) {
+            try{
+                String attributesJson = objectMapper.writeValueAsString(personDto.getAttributes());
+                person.setAttributes(attributesJson);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
         personRepository.save(person);
         return personDto;
     }
@@ -91,6 +118,7 @@ public class PersonServiceImpl implements PersonService {
         personDto.setLastName(person.getLastName());
         personDto.setEmail(person.getEmail());
         personDto.setAge(person.getAge());
+        personDto.setAttributes(person.getAttributes());
         return personDto;
     }
 

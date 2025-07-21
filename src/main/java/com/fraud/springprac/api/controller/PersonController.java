@@ -1,23 +1,15 @@
 package com.fraud.springprac.api.controller;
 
 
-import com.fraud.springprac.api.dto.AuthResponseDto;
-import com.fraud.springprac.api.dto.LoginDto;
 import com.fraud.springprac.api.dto.PersonDto;
 import com.fraud.springprac.api.dto.PersonResponse;
 import com.fraud.springprac.api.exception.PersonNotFoundException;
-import com.fraud.springprac.api.security.JWTGenerator;
 import com.fraud.springprac.api.service.PersonService;
-import com.fraud.springprac.api.util.DateMilliStamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Date;
 
 @EnableCaching
 @RestController

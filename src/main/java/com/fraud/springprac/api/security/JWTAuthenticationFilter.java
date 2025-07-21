@@ -1,9 +1,8 @@
 package com.fraud.springprac.api.security;
 
 import com.fraud.springprac.api.model.ActiveToken;
-import com.fraud.springprac.api.service.RedisService;
+import com.fraud.springprac.api.repository.ActiveTokenRepository;
 import com.fraud.springprac.api.service.impl.RedisServiceImpl;
-import com.fraud.springprac.api.util.DateMilliStamp;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,8 +17,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Date;
-import java.util.Optional;
 
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
@@ -31,6 +30,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private RedisServiceImpl redisService;
+
+    @Autowired
+    private ActiveTokenRepository activeTokenRepository;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -66,6 +68,10 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 //        System.out.println("After the extendTokenIfNotExpired " + DateMilliStamp.timeStamp());
         // Step 4: Set authentication
         //ActiveToken activeToken = activeTokenOpt.get();
+//        Date now = new Date();
+
+        updateDatabaseToken(token);
+
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(tokenGenerator.getUsernameFromJWT(token));
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -84,5 +90,16 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
+    }
+    private void updateDatabaseToken(String token) {
+        ActiveToken activeToken = activeTokenRepository.findByToken(token);
+
+        Instant newSlidingExpiry = Instant.now()
+                .plusMillis(SecurityConstants.JWT_SLIDING_WINDOW_EXPIRATION);
+
+        if (newSlidingExpiry.isBefore(activeToken.getAbsoluteExpiration().toInstant())) {
+            activeToken.setSlidingExpiration(Date.from(newSlidingExpiry));
+            activeTokenRepository.save(activeToken);
+        }
     }
 }

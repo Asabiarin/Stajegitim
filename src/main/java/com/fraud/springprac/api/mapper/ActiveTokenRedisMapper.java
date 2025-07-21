@@ -27,12 +27,12 @@ public class ActiveTokenRedisMapper {
 
     public ActiveToken mapFromRedis(Map<String, String> redisData, UserEntity user) {
         ActiveToken activeToken = new ActiveToken();
-        activeToken.setId(Long.parseLong((String) redisData.get("id")));
-        activeToken.setToken((String) redisData.get("token"));
+        activeToken.setId(Long.parseLong(redisData.get("id")));
+        activeToken.setToken(redisData.get("token"));
         activeToken.setUser(user);
-        activeToken.setSlidingExpiration(new Date(Long.parseLong((String) redisData.get("slidingExpiration"))));
-        activeToken.setAbsoluteExpiration(new Date(Long.parseLong((String) redisData.get("absoluteExpiration"))));
-        activeToken.setIssuedAt(new Date(Long.parseLong((String) redisData.get("issuedAt"))));
+        activeToken.setSlidingExpiration(new Date(Long.parseLong(redisData.get("slidingExpiration"))));
+        activeToken.setAbsoluteExpiration(new Date(Long.parseLong(redisData.get("absoluteExpiration"))));
+        activeToken.setIssuedAt(new Date(Long.parseLong(redisData.get("issuedAt"))));
 
         return activeToken;
     }

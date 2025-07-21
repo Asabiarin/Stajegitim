@@ -2,18 +2,13 @@ package com.fraud.springprac.api.service.impl;
 
 import com.fraud.springprac.api.mapper.ActiveTokenRedisMapper;
 import com.fraud.springprac.api.model.ActiveToken;
-import com.fraud.springprac.api.model.UserEntity;
-import com.fraud.springprac.api.repository.UserRepository;
-import com.fraud.springprac.api.security.SecurityConstants;
 import com.fraud.springprac.api.service.RedisService;
-import com.fraud.springprac.api.util.DateMilliStamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -44,7 +39,7 @@ public class RedisServiceImpl implements RedisService {
         hashOperations.putAll(redisKey, tokenData);
 
         // Set sliding expiration as Redis TTL
-        redisTemplate.expire(redisKey, slidingExpirationMs, TimeUnit.MINUTES);
+        redisTemplate.expire(redisKey, slidingExpirationMs, TimeUnit.MILLISECONDS);
     }
 
 //    @Override
@@ -96,12 +91,13 @@ public class RedisServiceImpl implements RedisService {
 
         // Only extend if absolute expiration hasn't passed
         //System.out.println("After ifNotExpired " + DateMilliStamp.timeStamp());
-        return redisTemplate.expire(redisKey, slidingExpirationMs, TimeUnit.MINUTES);
+        return redisTemplate.expire(redisKey, slidingExpirationMs, TimeUnit.MILLISECONDS);
     }
     @Override
     public void deleteToken(String token) {
         redisTemplate.delete(KEY_PREFIX + token);
     }
+
 
 
 }

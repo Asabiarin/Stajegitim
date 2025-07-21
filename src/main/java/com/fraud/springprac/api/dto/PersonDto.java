@@ -11,4 +11,5 @@ public class PersonDto {
     private String lastName;
     private int age;
     private String email;
+    private Object attributes;
 }
