@@ -20,8 +20,8 @@ public class Person{
     private int age;
     @Column(unique = true)
     private String email;
-    @Column(name= "attributes" ,columnDefinition = "json")
-    @ColumnTransformer(write = "?::json")
+    @Column(name= "attributes" ,columnDefinition = "jsonb")
+    @ColumnTransformer(write = "?::jsonb")
     private String attributes;
 
     /*

@@ -107,6 +107,12 @@ public class PersonServiceImpl implements PersonService {
         personRepository.delete(person);
     }
 
+    @Override
+    public List<PersonDto> searchByAttribute(String key,String value){
+        //return personRepository.findByAttribute(key, value);
+        return null;
+    }
+
     private PersonDto mapToPersonDto(Person person) {
         return getPersonDto(person);
     }

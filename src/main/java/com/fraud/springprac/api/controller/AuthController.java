@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.Date;
 
 @RestController
-@RequestMapping("/api/auth/")
+@RequestMapping("/api/auth")
 public class AuthController {
 
 
@@ -43,13 +43,13 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("register")
+    @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterDto registerDto) {
 
         return new ResponseEntity<>(authService.register(registerDto), HttpStatus.OK);
     }
 
-    @PostMapping("login")
+    @PostMapping("/login")
     @Transactional
     public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDto loginDto) {
         return new ResponseEntity<>(authService.login(loginDto), HttpStatus.OK);

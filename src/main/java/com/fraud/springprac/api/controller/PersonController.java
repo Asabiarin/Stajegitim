@@ -11,9 +11,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @EnableCaching
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api")
 public class PersonController {
 
     // GET endpoint to fetch all employees
@@ -25,14 +27,14 @@ public class PersonController {
     }
 
 
-    @PostMapping("person/byId")
+    @PostMapping("/person/byId")
     public ResponseEntity<PersonDto> getPersonByIdWithBody(
             @RequestBody PersonDto requestDto) throws PersonNotFoundException {
        PersonDto personDto = personService.getPersonById(requestDto.getId());
            return new ResponseEntity<>(personDto, HttpStatus.OK);
     }
 
-    @GetMapping("person")
+    @GetMapping("/person")
     public ResponseEntity<PersonResponse> getPersons(
 
             @RequestParam(value = "pageNo", defaultValue = "0", required = false)int pageNO,
@@ -42,26 +44,33 @@ public class PersonController {
     return new ResponseEntity<>(personService.getAllPersons(pageNO,pageSize), HttpStatus.OK);
     }
 
-    @GetMapping("person/{id}")
+    @GetMapping("/person/{id}")
     public ResponseEntity<PersonDto> personDetail(@PathVariable int id){
         return ResponseEntity.ok(personService.getPersonById(id));
     }
 
-    @PostMapping("person/create")
+    @PostMapping("/person/create")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<PersonDto> createPerson(@RequestBody PersonDto personDto) {
       return new ResponseEntity<>(personService.createPerson(personDto),HttpStatus.CREATED);
     }
 
-    @PutMapping("person/{id}/update")
+    @PutMapping("/person/{id}/update")
     public ResponseEntity<PersonDto> updatePerson(@RequestBody PersonDto personDto, @PathVariable("id")int id){
         return ResponseEntity.ok(personService.updatePerson(personDto, id));
     }
 
-    @DeleteMapping("person/{id}/delete")
+    @DeleteMapping("/person/{id}/delete")
     public ResponseEntity<String> deletePerson(@PathVariable("id") int id) {
         personService.deletePersonById(id);
         return new ResponseEntity<>("Person with id " + id + " deleted", HttpStatus.OK);
     }
 
+    @GetMapping("/person/searchByAttribute")
+    public List<PersonDto> searchByAttribute(
+            @RequestParam String key,
+            @RequestParam String value
+    ) {
+        return personService.searchByAttribute(key, value);
+    }
 }
