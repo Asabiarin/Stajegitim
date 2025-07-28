@@ -12,7 +12,7 @@ target/
 .settings
 .springBeans
 .sts4-cache
-.csv
+persons.csv
 
 ### IntelliJ IDEA ###
 .idea
