@@ -11,5 +11,6 @@ public class PersonDto {
     private String lastName;
     private int age;
     private String email;
+    @JsonAlias({"attribute" , "atb" , "requestedAttribute"})
     private Object attributes;
 }

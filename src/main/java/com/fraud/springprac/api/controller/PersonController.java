@@ -1,12 +1,17 @@
 package com.fraud.springprac.api.controller;
 
 
+import com.fraud.springprac.api.dto.AttributeResponse;
 import com.fraud.springprac.api.dto.PersonDto;
 import com.fraud.springprac.api.dto.PersonResponse;
 import com.fraud.springprac.api.exception.PersonNotFoundException;
+import com.fraud.springprac.api.model.Person;
 import com.fraud.springprac.api.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -66,11 +71,17 @@ public class PersonController {
         return new ResponseEntity<>("Person with id " + id + " deleted", HttpStatus.OK);
     }
 
-    @GetMapping("/person/searchByAttribute")
-    public List<PersonDto> searchByAttribute(
-            @RequestParam String key,
-            @RequestParam String value
-    ) {
-        return personService.searchByAttribute(key, value);
+    @PostMapping("/person/searchByAttribute")
+    public ResponseEntity<PersonResponse> searchByAttribute(
+            @RequestBody AttributeResponse request) {
+
+        return ResponseEntity.ok(
+                personService.searchByAttributeKeyValue(
+                        request.getKey(),
+                        request.getValue(),
+                        request.getPageNo(),
+                        request.getPageSize()
+                )
+        );
     }
 }

@@ -6,6 +6,7 @@ import com.fraud.springprac.api.dto.PersonDto;
 import com.fraud.springprac.api.dto.PersonResponse;
 import com.fraud.springprac.api.exception.PersonNotFoundException;
 import com.fraud.springprac.api.model.Person;
+import com.fraud.springprac.api.repository.PersonJdbcRepository;
 import com.fraud.springprac.api.repository.PersonRepository;
 import com.fraud.springprac.api.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,13 @@ import java.util.stream.Collectors;
 public class PersonServiceImpl implements PersonService {
     private final PersonRepository personRepository;
     private final ObjectMapper objectMapper;
+    private final PersonJdbcRepository personJdbcRepository;
 
     @Autowired
-    public PersonServiceImpl(PersonRepository personRepository, ObjectMapper objectMapper) {
+    public PersonServiceImpl(PersonRepository personRepository, ObjectMapper objectMapper, PersonJdbcRepository personJdbcRepository) {
         this.personRepository = personRepository;
         this.objectMapper = objectMapper;
+        this.personJdbcRepository = personJdbcRepository;
     }
 
 
@@ -71,7 +74,6 @@ public class PersonServiceImpl implements PersonService {
     public PersonDto getPersonById(int id) {
         Person person = personRepository.findById(id).orElseThrow(() -> new PersonNotFoundException("Person with id " + id + " not found"));
         return mapToPersonDto(person);
-
     }
 
     @Override
@@ -107,10 +109,11 @@ public class PersonServiceImpl implements PersonService {
         personRepository.delete(person);
     }
 
-    @Override
-    public List<PersonDto> searchByAttribute(String key,String value){
-        //return personRepository.findByAttribute(key, value);
-        return null;
+    public PersonResponse searchByAttributeKeyValue(String key, String value, int pageNo, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Page<Person> personPage = personRepository.findByAttributeKeyValue(key, value, pageable);
+
+        return PersonResponse.fromPage(personPage, this::mapToPersonDto);
     }
 
     private PersonDto mapToPersonDto(Person person) {

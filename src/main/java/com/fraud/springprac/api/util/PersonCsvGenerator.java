@@ -202,7 +202,7 @@ public class PersonCsvGenerator {
 
     public static void main(String[] args) {
         String fileName = "persons.csv";
-        int maxRecords = 1_000_000;
+        int maxRecords = 1000;
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             writer.write("firstName,lastName,email,age,attributes\n");

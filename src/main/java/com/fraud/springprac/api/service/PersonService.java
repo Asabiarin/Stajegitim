@@ -1,6 +1,5 @@
 package com.fraud.springprac.api.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fraud.springprac.api.dto.PersonDto;
 import com.fraud.springprac.api.dto.PersonResponse;
 import org.springframework.stereotype.Service;
@@ -14,5 +13,5 @@ public interface PersonService {
     PersonDto getPersonById(int id);
     PersonDto updatePerson(PersonDto personDto, int id);
     void deletePersonById(int id);
-    List<PersonDto> searchByAttribute(String key, String value);
+    PersonResponse searchByAttributeKeyValue(String key, String value, int pageNo, int pageSize);
 }
